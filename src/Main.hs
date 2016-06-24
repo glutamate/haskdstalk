@@ -10,6 +10,7 @@ import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 import Text.Blaze.Renderer.String
 import Lubeck.DV
+import Data.Monoid
 import Lubeck.Drawing
 import Lubeck.DV.Styling (getStyled)
 import Control.Lens(to)
@@ -27,8 +28,11 @@ import           Text.Blaze.Internal (customParent)
 main :: IO ()
 main = do
   persons <-genPersons 100
-  let b = train (logistic) $ map (prepare [height, weight] heart_attack) persons
-      plt = drawPlot $ plot persons [x <~ to height, y <~ to weight] pointG
+  mapM_ print persons
+  let b = train (logistic) $ map (prepare [height, weight, const 1] heart_attack) persons
+      plt = drawPlot $ plot persons [x <~ to height,
+                                     y <~ to weight,
+                                     color <~ to is_male] pointG
   writeFile "out.html" $ renderHtml $ drawingToBlazeMarkup mempty (plt `Lubeck.DV.Styling.getStyled` mempty)
   print b
 
