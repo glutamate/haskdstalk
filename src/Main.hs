@@ -13,7 +13,7 @@ import Lubeck.DV
 import Data.Monoid
 import Lubeck.Drawing
 import Lubeck.DV.Styling (getStyled)
-import Control.Lens(to)
+import Control.Lens(to, _1, _2, _3, _4)
 import           Data.Bifunctor
 import Lubeck.Str
   ( Str, packStr, unpackStr
@@ -27,13 +27,22 @@ import           Text.Blaze.Internal (customParent)
 
 main :: IO ()
 main = do
-  persons <-genPersons 100
-  mapM_ print persons
-  let b = train (logistic) $ map (prepare [height, weight, const 1] heart_attack) persons
-      plt = drawPlot $ plot persons [x <~ to height,
+  persons <-genPersons 200
+  testPersons <-genPersons 50
+  --mapM_ print persons
+  let b = train (logistic) $ map (prepare [height, const 1] heart_attack) persons
+      testPreds :: [(Double,Double)]
+      testPreds = flip map testPersons $ \pers -> (height pers, predict logistic b $ predictors [height, const 1] pers)
+      plt = drawPlot $ plot persons [x <~ to height ,
+--                                     y <~ to (\p-> 10 * (weight p / height p - 1/2.5)) ,
                                      y <~ to weight,
-                                     color <~ to is_male] pointG
-  writeFile "out.html" $ renderHtml $ drawingToBlazeMarkup mempty (plt `Lubeck.DV.Styling.getStyled` mempty)
+                                     color <~ to heart_attack] pointG
+      plt2 = drawPlot $ plot testPreds [x <~ _1,
+                                        y <~ _2] pointG
+  writeFile "out.html" $ renderHtml $ do
+     drawingToBlazeMarkup mempty (plt `Lubeck.DV.Styling.getStyled` mempty)
+     drawingToBlazeMarkup mempty (plt2 `Lubeck.DV.Styling.getStyled` mempty)
+  --print testPreds
   print b
 
 drawingToBlazeMarkup :: RenderingOptions -> Drawing -> H.Html
