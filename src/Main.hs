@@ -27,7 +27,7 @@ import           Text.Blaze.Internal (customParent)
 
 main :: IO ()
 main = do
-  persons <-genPersons 200
+  persons <-genPersons 100
   testPersons <-genPersons 50
   --mapM_ print persons
   let b = train (logistic) $ map (prepare [height, const 1] heart_attack) persons
@@ -42,7 +42,7 @@ main = do
   writeFile "out.html" $ renderHtml $ do
      drawingToBlazeMarkup mempty (plt `Lubeck.DV.Styling.getStyled` mempty)
      drawingToBlazeMarkup mempty (plt2 `Lubeck.DV.Styling.getStyled` mempty)
-  --print testPreds
+  print testPreds
   print b
 
 drawingToBlazeMarkup :: RenderingOptions -> Drawing -> H.Html
