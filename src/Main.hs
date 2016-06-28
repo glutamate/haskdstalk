@@ -29,7 +29,6 @@ import           Text.Blaze.Internal (customParent)
 import GenPoly
 import qualified Control.Foldl as L
 
-
 main :: IO ()
 main = do
   persons <-genPersons 100
@@ -58,6 +57,10 @@ main = do
      drawingToBlazeMarkup mempty (plt2 `Lubeck.DV.Styling.getStyled` mempty)
   print testPreds
   print b
+  let avgHeight = L.fold (L.premap height averageF) persons
+  print (avgHeight :: Double)
+  let morbidityBySmoking = L.fold (groupBy is_male $ L.premap heart_attack frequency) persons
+  print (morbidityBySmoking :: Map Bool Double )
   --print $ sumEqProd 100
 
 drawingToBlazeMarkup :: RenderingOptions -> Drawing -> H.Html
@@ -83,10 +86,17 @@ groupBy f (L.Fold step initial extract) = L.Fold step1 Map.empty (Map.map extrac
         Nothing -> Map.insert group (step initial val) mapacc
         Just vOld -> Map.insert group (step vOld val) mapacc
 
-filter :: (b -> Bool) -> L.Fold b c -> L.Fold b c
-filter p (L.Fold step initial extract) = L.Fold step1 initial extract where
+filterF :: (b -> Bool) -> L.Fold b c -> L.Fold b c
+filterF p (L.Fold step initial extract) = L.Fold step1 initial extract where
   step1 acc val =
     if p val then step acc val else acc
+
+averageF :: Fractional a => L.Fold a a
+averageF = (/) <$> L.sum <*> L.genericLength
+
+frequency :: L.Fold Bool Double
+frequency = (/) <$> filterF id L.genericLength <*> L.genericLength
+
 
 {-
 data Prob a = Prob (Seed -> (a,Seed)) (Expr a)
