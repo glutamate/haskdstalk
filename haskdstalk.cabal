@@ -24,3 +24,7 @@ executable haskdstalk
                      , blaze-html
                      , blaze-markup
                      , lens
+                     , vector
+                     , random-fu
+                     , foldl
+                     , containers
